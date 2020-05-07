@@ -7,70 +7,72 @@ import countries from '../data/countries.json';
 class CountryDetails extends Component {
     constructor(props) {
         super(props);
-        const { params } = this.props.match;
-        const country = this.getCountry(params.id);
         this.state = {
-            countries: countries,
-            country: country,
+            country: "",
         };
 
     }
 
-    getCountry = (id) => {
-        const theCountry = oneCountry => {
-            return oneCountry.cca3 === id;
+    getCountry = async (id) => {
+        const countryID = country => {
+            return country.cca3 === id;
         }
-        return countries.find(theCountry)
+        const theCountry = countries.find(countryID);
+        await this.setState({ country: theCountry })
+
     };
 
     componentDidMount() {
         const { params } = this.props.match;
-        const newCountry = this.getCountry(params.id);
-        this.setState({ country: newCountry });
+        this.getCountry(params.id);
 
+    }
+
+    componentDidUpdate(prevProps) {
+        const { params } = this.props.match;
+        if (prevProps.location.pathname !== this.props.location.pathname) {
+            this.getCountry(params.id);
+        }
     }
 
     render() {
         const countryName = this.state.country.name && this.state.country.name.common
+        const countryBorders = this.state.country.borders && this.state.country.borders.length
 
         return (
-            <div>
-                <div>
+            <React.Fragment>
                     <div className="col-7">
                         <h1>{this.state.country.flag} {countryName} </h1>
-                        <table class="table">
+                        <table className="table">
                             <thead></thead>
                             <tbody>
                                 <tr>
-                                    <td style={{ width: '30%' }}>Capital</td>
+                                    <td style={{ width: '50%' }}>Capital</td>
                                     <td>{this.state.country.capital}</td>
                                 </tr>
                                 <tr>
                                     <td>Area</td>
-                                    <td>{this.state.country.area} km
-                    <sup>2</sup>
+                                    <td>{this.state.country.area} km<sup>2</sup>
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td>Borders</td>
-                                    <td>
-                                        <ul>{this.state.country.borders ? this.state.country.borders.map((border, index) => {
-                                            countries.find(country => {
-                                                return country.ccn === border
-                                            })
-                                            return (<li key={index}><Link to={`/countrydetail/${border}`}>{border}</Link></li>)
-                                        }) : null}
 
+                                {countryBorders ?
+                                    <tr>
+                                        <td>Borders</td>
+                                        <td>
+                                            <ul> {this.state.country.borders.map((border, index) => {
+                                                return (<li key={index}><Link to={`/countrydetail/${border}`}>{border}</Link></li>)
+                                            })}
+                                            </ul>
+                                        </td>
 
-
-                                        </ul>
-                                    </td>
-                                </tr>
+                                    </tr>
+                                    : null
+                                }
                             </tbody>
                         </table>
                     </div>
-                </div>
-            </div>
+            </React.Fragment>
         )
     }
 }
